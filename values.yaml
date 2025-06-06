@@ -1,0 +1,57 @@
+provider: aws
+
+global:
+  accountID: ""
+  name: "capi"
+  namespace: whatever
+  region: ""
+  clusterVersion: v1.31.0
+  labels: {}
+
+cluster:
+  create: true
+  name: ""
+  clusterNetwork:
+    pods:
+      cidrBlocks:
+        - 192.168.0.0/16
+
+controlPlane:
+  name: ""
+  apiVersion: ""
+  #For multi-tenancy support, a reference field (identityRef) is added to AWSCluster,
+  #which informs the controller of which identity to be used when reconciling the cluster.
+  #If the identity provided exists in a different AWS account, this is the mechanism which informs the controller to provision a cluster in a different account.
+  # Identities should have adequate permissions for CAPA to reconcile clusters.
+  identityRef: ### https://cluster-api-aws.sigs.k8s.io/topics/multitenancy
+    kind: AWSClusterRoleIdentity
+    name: ""
+  # network: {}
+  network:
+    vpc:
+      id: ""
+    subnets: []
+  region: ""
+  partition: "" #default aws
+  sshKeyName: ""
+  roleAdditionalPolicies: []
+  logging: {}
+  additionalTags: {}
+  iamAuthenticatorConfig: {}
+  # iamAuthenticatorConfig:
+  #   mapRoles:
+  #     - rolearn: "role_arn1"
+  #       username: "sadmin"
+  #       groups:
+  #         - "admin-group"
+  #     - rolearn: "role_arn2"
+  #       username: "sso-admin"
+  #       groups:
+  #         - "sso-admin-group"
+  endpointAccess: {}
+  associateOIDCProvider: false
+  addons: {}
+
+infrastructure:
+  name: ""
+  apiVersion: ""

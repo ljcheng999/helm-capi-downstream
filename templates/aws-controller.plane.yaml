@@ -1,0 +1,90 @@
+{{ if and (eq "aws" .Values.provider) .Values.cluster.create }}
+apiVersion: {{ .Values.controlPlane.apiVersion | default "controlplane.cluster.x-k8s.io/v1beta2" }}
+kind: AWSManagedControlPlane
+metadata:
+  name: {{if .Values.controlPlane.name }}{{ .Values.controlPlane.name }}{{ else }}{{ .Values.global.name }}-control-plane{{ end }}
+  namespace: {{if .Values.global.namespace }}{{ .Values.global.namespace }}{{- else }}default{{- end }}
+spec:
+  eksClusterName: {{ .Values.cluster.name }}
+  {{- if .Values.controlPlane.identityRef }}
+  identityRef:
+    {{- if eq "aws" .Values.provider }}
+    kind: AWSClusterRoleIdentity
+    {{- end }}
+    {{- if eq "azure" .Values.provider }}
+    kind: AzureClusterIdentity
+    {{- end }}
+    {{- if eq "gcp" .Values.provider }}
+    kind: GCPClusterIdentity
+    {{- end }}
+    name: {{ .Values.controlPlane.identityRef.name | quote }}
+  {{- end }}
+  {{- if and (eq "aws" .Values.provider) .Values.controlPlane.network }}
+  network:
+    {{- if .Values.controlPlane.network.vpc }}
+    vpc:
+      id: {{ .Values.controlPlane.network.vpc.id }}
+    {{- end }}
+    {{- if .Values.controlPlane.network.subnets }}
+    subnets:
+    {{- toYaml .Values.controlPlane.network.subnets | nindent 4 }}
+    {{- end }}
+  {{- end }}
+  region: {{ .Values.global.region | default "us-east-1" }}
+  partition: {{ .Values.controlPlane.partition | default "aws" }}
+  sshKeyName: {{ .Values.controlPlane.sshKeyName | default "default" }}
+  version: {{ .Values.global.clusterVersion | default "v1.30.0" }}
+  {{- if .Values.controlPlane.roleAdditionalPolicies }}
+  roleAdditionalPolicies:
+    {{- toYaml .Values.controlPlane.roleAdditionalPolicies | nindent 4 }}
+  {{- end }}
+  {{- if .Values.controlPlane.logging }}
+  logging:
+    {{- if .Values.controlPlane.logging.apiServer }}
+    apiServer: {{ .Values.controlPlane.logging.apiServer | default "false" }}
+    {{- end }}
+    {{- if .Values.controlPlane.logging.audit }}
+    audit: {{ .Values.controlPlane.logging.audit | default "false" }}
+    {{- end }}
+    {{- if .Values.controlPlane.logging.authenticator }}
+    authenticator: {{ .Values.controlPlane.logging.authenticator | default "false" }}
+    {{- end }}
+    {{- if .Values.controlPlane.logging.controllerManager }}
+    controllerManager: {{ .Values.controlPlane.logging.controllerManager | default "false" }}
+    {{- end }}
+    {{- if .Values.controlPlane.logging.scheduler }}
+    scheduler: {{ .Values.controlPlane.logging.scheduler | default "false" }}
+    {{- end }}
+  {{- end }}
+  {{- if .Values.controlPlane.additionalTags }}
+  additionalTags:
+    {{- toYaml .Values.controlPlane.additionalTags | nindent 4 }}
+  {{- end }}
+  {{- if .Values.controlPlane.iamAuthenticatorConfig }}
+  iamAuthenticatorConfig:
+    {{- if .Values.controlPlane.iamAuthenticatorConfig.mapRoles }}
+    mapRoles:
+      {{- toYaml .Values.controlPlane.iamAuthenticatorConfig.mapRoles | nindent 6 }}
+    {{- end }}
+    {{- if .Values.controlPlane.iamAuthenticatorConfig.mapUsers }}
+    mapUsers:
+      {{- toYaml .Values.controlPlane.iamAuthenticatorConfig.mapUsers | nindent 6 }}
+    {{- end }}
+  {{- end }}
+  {{- if .Values.controlPlane.endpointAccess }}
+  endpointAccess:
+    private: {{ .Values.controlPlane.endpointAccess.private | default "true" }}
+    public: {{ .Values.controlPlane.endpointAccess.public | default "false" }}
+    {{- if .Values.controlPlane.endpointAccess.publicCIDRs }}
+    publicCIDRs:
+    {{- toYaml .Values.controlPlane.endpointAccess.publicCIDRs | nindent 4 }}
+    {{- end }}
+  {{- end }}
+  {{- if .Values.controlPlane.associateOIDCProvider }}
+  associateOIDCProvider: {{ .Values.controlPlane.associateOIDCProvider | default "false" }}
+  {{- end }}
+  {{- if .Values.controlPlane.addons }}
+  addons:
+  {{- toYaml .Values.controlPlane.addons | nindent 2 }}
+  {{- end }}
+{{ end }}

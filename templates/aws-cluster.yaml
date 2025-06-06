@@ -1,0 +1,43 @@
+{{ if and (eq "aws" .Values.provider) .Values.cluster.create }}
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: Cluster
+metadata:
+  name: {{ .Values.cluster.name }}
+  namespace: {{if .Values.global.namespace }}{{ .Values.global.namespace }}{{- else }}default{{- end }}
+spec:
+{{- if .Values.cluster.clusterNetwork }}
+  clusterNetwork:
+    pods:
+      cidrBlocks:
+        {{- toYaml .Values.cluster.clusterNetwork.pods.cidrBlocks | nindent 8 }}
+{{- end }}
+  {{- if .Values.cluster.create }}
+  controlPlaneRef:
+    apiVersion: {{ .Values.controlPlane.apiVersion | default "controlplane.cluster.x-k8s.io/v1beta2" }}
+    {{- if eq "aws" .Values.provider }}
+    kind: AWSManagedControlPlane
+    {{- end }}
+    name: {{if .Values.controlPlane.name }}{{ .Values.controlPlane.name }}{{ else }}{{ .Values.global.name }}-control-plane{{ end }}
+  infrastructureRef:
+    apiVersion: {{ .Values.infrastructure.apiVersion | default "infrastructure.cluster.x-k8s.io/v1beta2" }}
+    {{- if eq "aws" .Values.provider }}
+    kind: AWSManagedCluster
+    {{- end }}
+    name: {{if .Values.infrastructure.name }}{{ .Values.infrastructure.name }}{{ else }}{{ .Values.global.name }}-control-plane{{ end }}
+  {{- end }}
+{{ end }}
+---
+{{- if and (eq "aws" .Values.provider) .Values.cluster.create }}
+apiVersion: {{ .Values.infrastructure.apiVersion | default "infrastructure.cluster.x-k8s.io/v1beta2" }}
+kind: AWSManagedCluster
+metadata:
+  name: {{ .Values.cluster.name }}
+  namespace: {{if .Values.global.namespace }}{{ .Values.global.namespace }}{{- else }}default{{- end }}
+  labels:
+  {{- if .Values.global.labels }}
+    {{- toYaml .Values.global.labels | nindent 4 }}
+  {{- end }}
+    {{- include "helm-capi-cluster-template.aws-labels" . | nindent 4 }}
+{{- end }}
+spec: {}
+---

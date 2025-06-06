@@ -1,0 +1,92 @@
+provider: aws
+
+global:
+  accountID: "022985595394"
+  name: "capi"
+  namespace: whatever
+  region: ""
+  clusterVersion: v1.31.0
+  labels:
+    "capi.kubesources.com": "ljcheng"
+
+cluster:
+  create: true
+  name: test
+  clusterNetwork:
+    pods:
+      cidrBlocks:
+        - 192.168.0.0/16
+
+controlPlane:
+  name: ""
+  apiVersion: ""
+  #For multi-tenancy support, a reference field (identityRef) is added to AWSCluster,
+  #which informs the controller of which identity to be used when reconciling the cluster.
+  #If the identity provided exists in a different AWS account, this is the mechanism which informs the controller to provision a cluster in a different account.
+  # Identities should have adequate permissions for CAPA to reconcile clusters.
+  identityRef: ### https://cluster-api-aws.sigs.k8s.io/topics/multitenancy
+    kind: AWSClusterRoleIdentity
+    name: "022985595394"
+  # network: {}
+  network:
+    vpc:
+      id: "vpc-04f6f0d2469f13216"
+    subnets:
+      - id: "subnet-07801e472d1e9f0d7"
+      - id: "subnet-07b8ce15d4653e1b7"
+      - id: "subnet-066dabaf6d7f2c826"
+      - id: "subnet-00628d2adc5433647"
+  region: ""
+  partition: "" #default aws
+  sshKeyName: ""
+  roleAdditionalPolicies:
+    - "arn:aws:iam::aws:policy/AmazonEKSVPCResourceController"
+    - "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+  logging:
+    apiServer: true
+    audit: true
+    authenticator: true
+    controllerManager: true
+    scheduler: true
+  additionalTags:
+    "ljcheng.kubesources.com/source": "capi"
+    App: ""
+    Group: ""
+    Org: ""
+    Stack: ""
+    Team: ""
+    Email: ""
+  iamAuthenticatorConfig:
+    mapRoles:
+      - rolearn: "arn:aws:iam::022985595394:role/admin_read_write_eks"
+        username: "sso-admin"
+        groups:
+          - "sso-admin-group"
+    mapUsers:
+      - rolearn: "arn:aws:iam::022985595394:user/ljcheng"
+        username: "sso-admin"
+        groups:
+          - "sso-admin-group"
+  endpointAccess:
+    private: true
+    public: true
+    publicCIDRs:
+      - "142.136.0.0/16"
+  associateOIDCProvider: true
+  addons:
+    - name: "aws-ebs-csi-driver"
+      version: "v1.40.1-eksbuild.1"
+      conflictResolution: "overwrite"
+    - name: "coredns"
+      version: "v1.11.4-eksbuild.2"
+      conflictResolution: "overwrite"
+    - name: "kube-proxy"
+      version: "v1.31.3-eksbuild.2"
+      conflictResolution: "overwrite"
+    - name: "vpc-cni"
+      version: "v1.19.3-eksbuild.1"
+      conflictResolution: "overwrite"
+
+infrastructure:
+  name: ""
+  apiVersion: ""
