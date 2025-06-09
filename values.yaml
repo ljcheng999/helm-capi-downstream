@@ -8,6 +8,18 @@ global:
   clusterVersion: v1.31.0
   labels: {}
 
+argocd:
+  create: true
+  namespace: argocd
+  project:
+    name: ""
+    description: ""
+    sourceRepos: []
+    destinations: []
+    clusterResourceWhitelist: []
+    namespaceResourceWhitelist: []
+    roles: []
+
 cluster:
   create: true
   name: ""
