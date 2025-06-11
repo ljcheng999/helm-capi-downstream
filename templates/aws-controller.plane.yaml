@@ -1,9 +1,9 @@
 {{ if and (eq "aws" .Values.provider) .Values.cluster.create }}
-apiVersion: {{ .Values.awsControlPlane.apiVersion | default "controlplane.cluster.x-k8s.io/v1beta2" }}
+apiVersion: controlplane.cluster.x-k8s.io/v1beta2
 kind: AWSManagedControlPlane
 metadata:
   {{- if .Values.global.namePrefix }}
-  name: {{ .Values.global.namePrefix }}{{ .Values.global.name }}-control-plane
+  name: {{ .Values.global.namePrefix }}{{ .Values.global.name }}
   {{- else }}
   name: {{ .Values.global.name | quote }}
   {{- end }}
@@ -15,7 +15,7 @@ metadata:
   {{- include "helm-capi-cluster-template.aws-labels" . | nindent 4 }}
 spec:
   {{- if .Values.global.namePrefix }}
-  eksClusterName: {{ .Values.global.namePrefix }}{{ .Values.global.name }}-cluster
+  eksClusterName: {{ .Values.global.namePrefix }}{{ .Values.global.name }}
   {{- else }}
   eksClusterName: {{ .Values.global.name | quote }}
   {{- end }}
@@ -71,9 +71,9 @@ spec:
     scheduler: {{ .Values.awsControlPlane.logging.scheduler | default "false" }}
     {{- end }}
   {{- end }}
-  {{- if .Values.awsControlPlane.additionalTags }}
+  {{- if .Values.global.additionalTags }}
   additionalTags:
-    {{- toYaml .Values.awsControlPlane.additionalTags | nindent 4 }}
+    {{- toYaml .Values.global.additionalTags | nindent 4 }}
   {{- end }}
   {{- if .Values.awsControlPlane.iamAuthenticatorConfig }}
   iamAuthenticatorConfig:

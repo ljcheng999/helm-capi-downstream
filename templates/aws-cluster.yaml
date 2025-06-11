@@ -3,7 +3,7 @@ apiVersion: cluster.x-k8s.io/v1beta1
 kind: Cluster
 metadata:
   {{- if .Values.global.namePrefix }}
-  name: {{ .Values.global.namePrefix }}{{ .Values.global.name }}-cluster
+  name: {{ .Values.global.namePrefix }}{{ .Values.global.name }}
   {{- else }}
   name: {{ .Values.global.name | quote }}
   {{- end }}
@@ -22,22 +22,26 @@ spec:
 {{- end }}
   {{- if .Values.cluster.create }}
   controlPlaneRef:
-    apiVersion: {{ .Values.controlPlane.apiVersion | default "controlplane.cluster.x-k8s.io/v1beta2" }}
+    {{- if eq "aws" .Values.provider }}
+    apiVersion: controlplane.cluster.x-k8s.io/v1beta2
+    {{- end }}
     {{- if eq "aws" .Values.provider }}
     kind: AWSManagedControlPlane
     {{- end }}
     {{- if .Values.global.namePrefix }}
-    name: {{ .Values.global.namePrefix }}{{ .Values.global.name }}-control-plane
+    name: {{ .Values.global.namePrefix }}{{ .Values.global.name }}
     {{- else }}
     name: {{ .Values.global.name | quote }}
     {{- end }}
   infrastructureRef:
-    apiVersion: {{ .Values.infrastructure.apiVersion | default "infrastructure.cluster.x-k8s.io/v1beta2" }}
+    {{- if eq "aws" .Values.provider }}
+    apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
+    {{- end }}
     {{- if eq "aws" .Values.provider }}
     kind: AWSManagedCluster
     {{- end }}    
     {{- if .Values.global.namePrefix }}
-    name: {{ .Values.global.namePrefix }}{{ .Values.global.name }}-cluster
+    name: {{ .Values.global.namePrefix }}{{ .Values.global.name }}
     {{- else }}
     name: {{ .Values.global.name | quote }}
     {{- end }}
@@ -45,11 +49,11 @@ spec:
 {{ end }}
 ---
 {{- if and (eq "aws" .Values.provider) .Values.cluster.create }}
-apiVersion: {{ .Values.infrastructure.apiVersion | default "infrastructure.cluster.x-k8s.io/v1beta2" }}
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
 kind: AWSManagedCluster
 metadata:
   {{- if .Values.global.namePrefix }}
-  name: {{ .Values.global.namePrefix }}{{ .Values.global.name }}-cluster
+  name: {{ .Values.global.namePrefix }}{{ .Values.global.name }}
   {{- else }}
   name: {{ .Values.global.name | quote }}
   {{- end }}
@@ -62,3 +66,21 @@ metadata:
 {{- end }}
 spec: {}
 ---
+{{ if and (and (eq "aws" .Values.provider) .Values.cluster.create) .Values.nodeGroup.create }}
+apiVersion: bootstrap.cluster.x-k8s.io/v1beta2
+kind: EKSConfigTemplate
+metadata:
+  {{- if .Values.global.namePrefix }}
+  name: {{ .Values.global.namePrefix }}{{ .Values.global.name }}
+  {{- else }}
+  name: {{ .Values.global.name | quote }}
+  {{- end }}
+  namespace: {{if .Values.global.namespace }}{{ .Values.global.namespace }}{{- else }}default{{- end }}
+  labels:
+  {{- with .Values.global.labels -}}
+    {{ toYaml . | nindent 4 }}
+  {{- end }}
+  {{- include "helm-capi-cluster-template.aws-labels" . | nindent 4 }}
+spec:
+  template: {}
+{{- end }}

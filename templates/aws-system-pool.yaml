@@ -1,0 +1,112 @@
+
+{{ if and (and (eq "aws" .Values.provider) .Values.cluster.create) .Values.nodeGroup.create }}
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
+kind: AWSManagedMachinePool
+metadata:
+  {{- if .Values.global.namePrefix }}
+  name: {{ .Values.global.namePrefix }}{{ .Values.global.name }}-system-pool
+  {{- else }}
+  name: {{ .Values.global.name | quote }}-system-pool
+  {{- end }}
+  namespace: {{if .Values.global.namespace }}{{ .Values.global.namespace }}{{- else }}default{{- end }}
+  labels:
+    {{- with .Values.global.labels -}}
+    {{ toYaml . | nindent 4 }}
+    {{- end }}
+  {{- include "helm-capi-cluster-template.aws-labels" . | nindent 4 }}
+spec:
+  {{- if .Values.global.namePrefix }}
+  eksNodegroupName: {{ .Values.global.namePrefix }}{{ .Values.global.name }}-system-pool
+  {{- else }}
+  eksNodegroupName: {{ .Values.global.name | quote }}-system-pool
+  {{- end }}
+  {{- if .Values.nodeGroup.availabilityZones }}
+  availabilityZones:
+    {{- toYaml .Values.nodeGroup.availabilityZones | nindent 4 }}
+  {{- end }}
+  {{- if .Values.nodeGroup.subnetIDs }}
+  subnetIDs:
+    {{- toYaml .Values.nodeGroup.subnetIDs | nindent 4 }}
+  {{- end }}
+  {{- if .Values.global.additionalTags }}
+  additionalTags:
+    {{- toYaml .Values.global.additionalTags | nindent 4 }}
+  {{- end }}
+  {{- if .Values.nodeGroup.roleAdditionalPolicies }}
+  roleAdditionalPolicies:
+    {{- toYaml .Values.nodeGroup.roleAdditionalPolicies | nindent 4 }}
+  {{- end }}
+    - "arn:aws:iam::{{ .Values.global.accountID }}:policy/capi-ingress-elb-policy"
+    - "arn:aws:iam::{{ .Values.global.accountID }}:policy/capa-nodes-assume-policy"
+    - "arn:aws:iam::{{ .Values.global.accountID }}:policy/capa-nodes-karpenter-controller-policy"
+  amiType: "CUSTOM"
+  labels:
+    "node-role.kubernetes.io/controller-plane": "true"
+    "bfe.spectrum.com/node-group-name": {{if .Values.global.namePrefix }}{{ .Values.global.namePrefix }}{{ .Values.global.name }}-system-pool{{- else }}{{ .Values.global.name | quote }}-system-pool{{- end }}
+    "bfe.spectrum.com/node-role": "system"
+  taints:
+    - key: "bfe.spectrum.com/node-role"
+      value: "system"
+      effect: "no-schedule"
+  {{- if .Values.nodeGroup.awsLaunchTemplate }}
+  awsLaunchTemplate:
+    imageLookupBaseOS: {{ .Values.nodeGroup.awsLaunchTemplate.imageLookupBaseOS | default "amzn_2" }}
+    imageLookupFormat: {{ .Values.nodeGroup.amiData.prefix }}_{{ .Values.global.clusterVersion }}_{{ .Values.nodeGroup.awsLaunchTemplate.imageLookupBaseOS }}_ami_{{ .Values.nodeGroup.amiData.pinnedDate }}*
+    imageLookupOrg: {{ .Values.nodeGroup.awsLaunchTemplate.imageLookupOrg }}
+    instanceType: {{ .Values.nodeGroup.awsLaunchTemplate.instanceType | default "m5.xlarge" }}
+    rootVolume:
+      size: {{ .Values.nodeGroup.awsLaunchTemplate.rootVolume.size | default "250" }}
+      type: {{ .Values.nodeGroup.awsLaunchTemplate.rootVolume.type | default "gp3" }}
+    instanceMetadataOptions:
+      httpTokens: {{ .Values.nodeGroup.awsLaunchTemplate.instanceMetadataOptions.httpTokens | default "required" }}
+      httpPutResponseHopLimit: {{ .Values.nodeGroup.awsLaunchTemplate.instanceMetadataOptions.httpTokens | default "2" }}
+  {{- end }}
+---
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: MachinePool
+metadata:
+  {{- if .Values.global.namePrefix }}
+  name: {{ .Values.global.namePrefix }}{{ .Values.global.name }}-system-pool
+  {{- else }}
+  name: {{ .Values.global.name | quote }}-system-pool
+  {{- end }}
+  namespace: {{if .Values.global.namespace }}{{ .Values.global.namespace }}{{- else }}default{{- end }}
+  labels:
+    {{- with .Values.global.labels -}}
+    {{ toYaml . | nindent 4 }}
+    {{- end }}
+  {{- include "helm-capi-cluster-template.aws-labels" . | nindent 4 }}
+spec:
+  {{- if .Values.global.namePrefix }}
+  clusterName: {{ .Values.global.namePrefix }}{{ .Values.global.name }}-system-pool
+  {{- else }}
+  clusterName: {{ .Values.global.name | quote }}-system-pool
+  {{- end }}
+  replicas: {{ .Values.nodeGroup.systemNodesReplicas | default "3" }}
+  template:
+    spec:
+      {{- if .Values.global.namePrefix }}
+      clusterName: {{ .Values.global.namePrefix }}{{ .Values.global.name }}-system-pool
+      {{- else }}
+      clusterName: {{ .Values.global.name | quote }}-system-pool
+      {{- end }}
+      bootstrap:
+        {{- if and (and (eq "aws" .Values.provider) .Values.cluster.create) .Values.nodeGroup.create }}
+        configRef:
+          apiVersion: bootstrap.cluster.x-k8s.io/v1beta2
+          kind: EKSConfigTemplate
+          {{- if .Values.global.namePrefix }}
+          name: {{ .Values.global.namePrefix }}{{ .Values.global.name }}
+          {{- else }}
+          name: {{ .Values.global.name | quote }}
+          {{- end }}
+        {{- end }}
+      infrastructureRef:
+        apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
+        kind: AWSManagedMachinePool
+        {{- if .Values.global.namePrefix }}
+        name: {{ .Values.global.namePrefix }}{{ .Values.global.name }}-system-pool
+        {{- else }}
+        name: {{ .Values.global.name | quote }}-system-pool
+        {{- end }}
+{{- end }}
