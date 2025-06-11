@@ -67,10 +67,10 @@ Create common label for AWS
 */}}
 {{- define "helm-capi-cluster-template.aws-labels" -}}
 {{- if eq "aws" .Values.provider -}}
-public-cloud.provider: {{ .Values.provider }}
-public-cloud.account: {{ .Values.global.accountID }}
+public-cloud.provider: {{ .Values.provider | quote }}
+public-cloud.account: {{ .Values.global.accountID | quote }}
 {{- if .Values.cluster.create }}
-public-cloud.eks_name: {{ .Values.cluster.name }}
+public-cloud.eks_name: {{ .Values.global.name | quote }}
 {{- end }}
 {{- end }}
 {{- end }}

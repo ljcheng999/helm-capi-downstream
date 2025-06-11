@@ -1,0 +1,23 @@
+{{ if and (eq "aws" .Values.provider) .Values.awsClusterRoleIdentity.create }}
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
+kind: AWSClusterRoleIdentity
+metadata:
+  {{- if .Values.global.namePrefix }}
+  name: {{ .Values.global.namePrefix }}{{ .Values.global.name }}-role-identity"
+  {{- else }}
+  name: {{ .Values.global.name | quote }}
+  {{- end }}
+spec:
+  {{- if .Values.awsClusterRoleIdentity.allowedNamespaces }}
+  allowedNamespaces:
+    {{- toYaml .Values.awsClusterRoleIdentity.allowedNamespaces | nindent 4 }}
+  {{- else }}
+  allowedNamespaces: {} # matches all namespaces
+  {{- end }}
+  roleARN: {{ .Values.awsClusterRoleIdentity.roleARN | default "" }}
+  sessionName: {{ .Values.awsClusterRoleIdentity.sessionName | default "capa-role-local-session" | quote }}
+  durationSeconds: {{ .Values.awsClusterRoleIdentity.durationSeconds | default "900" }}
+  sourceIdentityRef:
+    kind: AWSClusterControllerIdentity # use the singleton for root auth
+    name: default
+{{- end }}
