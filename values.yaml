@@ -10,18 +10,6 @@ global:
   labels: {}
   additionalTags: {}
 
-argocd:
-  create: true
-  namespace: argocd
-  project:
-    name: ""
-    description: ""
-    sourceRepos: []
-    destinations: []
-    clusterResourceWhitelist: []
-    namespaceResourceWhitelist: []
-    roles: []
-
 cluster:
   create: true
   name: ""
