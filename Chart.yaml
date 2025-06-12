@@ -2,8 +2,8 @@ apiVersion: v2
 name: helm-capi-cluster-template
 description: A Helm chart for public cloud cluster with Cluster API
 type: application
-version: 1.0.2
-appVersion: "1.0.2"
+version: 1.0.3
+appVersion: "1.0.3"
 maintainers:
   - name: Lucious Johnny Cheng
     url: ljcheng.kubesources.com
