@@ -41,6 +41,7 @@ awsClusterRoleIdentity:
   #   allowedNamespaces: []
 
 controlPlane:
+  create: false
   name: ""
   apiVersion: ""
   #For multi-tenancy support, a reference field (identityRef) is added to AWSCluster,

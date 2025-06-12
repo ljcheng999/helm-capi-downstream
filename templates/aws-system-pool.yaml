@@ -78,17 +78,17 @@ metadata:
   {{- include "helm-capi-cluster-template.aws-labels" . | nindent 4 }}
 spec:
   {{- if .Values.global.namePrefix }}
-  clusterName: {{ .Values.global.namePrefix }}{{ .Values.global.name }}-system-pool
+  clusterName: {{ .Values.global.namePrefix }}{{ .Values.global.name }}
   {{- else }}
-  clusterName: {{ .Values.global.name | quote }}-system-pool
+  clusterName: {{ .Values.global.name | quote }}
   {{- end }}
   replicas: {{ .Values.nodeGroup.systemNodesReplicas | default "3" }}
   template:
     spec:
       {{- if .Values.global.namePrefix }}
-      clusterName: {{ .Values.global.namePrefix }}{{ .Values.global.name }}-system-pool
+      clusterName: {{ .Values.global.namePrefix }}{{ .Values.global.name }}
       {{- else }}
-      clusterName: {{ .Values.global.name | quote }}-system-pool
+      clusterName: {{ .Values.global.name | quote }}
       {{- end }}
       bootstrap:
         {{- if and (and (eq "aws" .Values.provider) .Values.cluster.create) .Values.nodeGroup.create }}

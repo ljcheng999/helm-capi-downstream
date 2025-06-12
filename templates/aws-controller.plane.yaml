@@ -1,4 +1,4 @@
-{{ if and (eq "aws" .Values.provider) .Values.cluster.create }}
+{{ if and (and (eq "aws" .Values.provider) .Values.cluster.create) .Values.awsControlPlane.create }}
 apiVersion: controlplane.cluster.x-k8s.io/v1beta2
 kind: AWSManagedControlPlane
 metadata:
