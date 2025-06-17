@@ -2,8 +2,8 @@ provider: aws
 
 global:
   accountID: ""
-  name: "capi"
-  namePrefix: ""
+  name: ""
+  namePrefix: "capi-"
   namespace: whatever
   region: ""
   clusterVersion: v1.31.0
@@ -11,8 +11,7 @@ global:
   additionalTags: {}
 
 cluster:
-  create: true
-  name: ""
+  create: false
   clusterNetwork:
     pods:
       cidrBlocks:
@@ -20,7 +19,6 @@ cluster:
 
 awsClusterRoleIdentity:
   create: false
-  name: ""
   allowedNamespaces: []
   roleARN: ""
   sessionName: ""
@@ -28,9 +26,8 @@ awsClusterRoleIdentity:
   # awsClusterControllerIdentity:
   #   allowedNamespaces: []
 
-controlPlane:
+awsControlPlane:
   create: false
-  name: ""
   apiVersion: ""
   #For multi-tenancy support, a reference field (identityRef) is added to AWSCluster,
   #which informs the controller of which identity to be used when reconciling the cluster.
@@ -63,7 +60,7 @@ controlPlane:
   #         - "sso-admin-group"
   endpointAccess: {}
   associateOIDCProvider: false
-  addons: {}
+  addons: []
 
 nodeGroup:
   create: false
@@ -87,4 +84,4 @@ nodeGroup:
     instanceMetadataOptions:
       httpTokens: "required"
       httpPutResponseHopLimit: 2
-  amiData: {}
+  amiData: ""

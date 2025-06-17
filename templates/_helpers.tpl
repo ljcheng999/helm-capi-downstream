@@ -70,7 +70,11 @@ Create common label for AWS
 public-cloud.provider: {{ .Values.provider | quote }}
 public-cloud.account: {{ .Values.global.accountID | quote }}
 {{- if .Values.cluster.create }}
-public-cloud.eks_name: {{ .Values.global.name | quote }}
+{{- if .Values.global.namePrefix }}
+public-cloud.eks-name: {{ .Values.global.namePrefix }}{{ .Values.global.name }}
+{{- else }}
+public-cloud.eks-name: {{ .Values.global.name | quote }}
+{{- end }}
 {{- end }}
 {{- end }}
 {{- end }}

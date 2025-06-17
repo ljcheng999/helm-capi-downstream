@@ -7,7 +7,6 @@ metadata:
   {{- else }}
   name: {{ .Values.global.name | quote }}
   {{- end }}
-  namespace: {{if .Values.global.namespace }}{{ .Values.global.namespace }}{{- else }}default{{- end }}
   labels:
     {{- with .Values.global.labels -}}
     {{ toYaml . | nindent 4 }}
